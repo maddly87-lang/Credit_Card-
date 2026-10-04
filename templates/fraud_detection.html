@@ -1,0 +1,81 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="max-w-5xl mx-auto">
+    <h1 class="text-3xl font-bold mb-2">Machine Learning Pipeline</h1>
+    <p class="text-slate-400 mb-8">PBL Project Explanation: Binary Classification Problem</p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+        <!-- Model Performance Metrics -->
+        <div class="glass-card rounded-xl p-6">
+            <h3 class="text-xl font-bold mb-6 flex items-center"><i class="fa-solid fa-chart-bar text-cyan-400 mr-2"></i> Model Evaluation</h3>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
+                    <div class="text-xs text-slate-400 uppercase tracking-wider mb-1">Accuracy</div>
+                    <div class="text-3xl font-bold text-white">{{ (metrics.accuracy * 100)|round(1) }}%</div>
+                </div>
+                <div class="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
+                    <div class="text-xs text-slate-400 uppercase tracking-wider mb-1">Precision</div>
+                    <div class="text-3xl font-bold text-cyan-400">{{ (metrics.precision * 100)|round(1) }}%</div>
+                </div>
+                <div class="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
+                    <div class="text-xs text-slate-400 uppercase tracking-wider mb-1">Recall</div>
+                    <div class="text-3xl font-bold text-cyan-400">{{ (metrics.recall * 100)|round(1) }}%</div>
+                </div>
+                <div class="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
+                    <div class="text-xs text-slate-400 uppercase tracking-wider mb-1">F1 Score</div>
+                    <div class="text-3xl font-bold text-blue-400">{{ (metrics.f1 * 100)|round(1) }}%</div>
+                </div>
+            </div>
+            <div class="mt-4 text-xs text-slate-400 p-3 bg-blue-900/20 border border-blue-500/20 rounded">
+                <i class="fa-solid fa-circle-info text-blue-400 mr-1"></i> 
+                <b>Note:</b> In fraud detection, Accuracy alone is misleading due to severe class imbalance. We prioritize <b>Recall</b> to catch as many frauds as possible, and <b>Precision</b> to minimize false alarms.
+            </div>
+        </div>
+
+        <!-- Project Info -->
+        <div class="glass-card rounded-xl p-6">
+            <h3 class="text-xl font-bold mb-6 flex items-center"><i class="fa-solid fa-brain text-cyan-400 mr-2"></i> Algorithms Used</h3>
+            <ul class="space-y-3 mb-6">
+                {% for algo in info.algorithms %}
+                <li class="flex items-center text-slate-200 bg-slate-800/50 px-4 py-2 rounded-lg border border-slate-700/50">
+                    <i class="fa-solid fa-microchip text-slate-500 mr-3"></i> {{ algo }}
+                </li>
+                {% endfor %}
+            </ul>
+
+            <h4 class="font-bold text-sm text-slate-300 mb-3">Handling Class Imbalance</h4>
+            <div class="flex flex-wrap gap-2">
+                {% for method in info.imbalance_handling %}
+                <span class="px-3 py-1 bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 rounded-full text-xs">
+                    {{ method }}
+                </span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Pipeline Visualization -->
+    <div class="glass-card rounded-xl p-8 border border-slate-700">
+        <h3 class="text-xl font-bold mb-8 text-center">Data Science Pipeline Architecture</h3>
+        
+        <div class="flex flex-col items-center max-w-2xl mx-auto space-y-2">
+            <div class="w-full bg-slate-800 py-3 rounded-lg text-center font-bold border border-slate-600 shadow-lg text-cyan-400">Raw Transaction Data</div>
+            <i class="fa-solid fa-arrow-down text-slate-500"></i>
+            <div class="w-full bg-slate-800 py-3 rounded-lg text-center font-bold border border-slate-600 shadow-lg">Data Preprocessing & Scaling</div>
+            <i class="fa-solid fa-arrow-down text-slate-500"></i>
+            <div class="w-full bg-slate-800 py-3 rounded-lg text-center font-bold border border-slate-600 shadow-lg">Feature Engineering</div>
+            <i class="fa-solid fa-arrow-down text-slate-500"></i>
+            <div class="w-full bg-indigo-900/50 py-3 rounded-lg text-center font-bold border border-indigo-500/50 shadow-lg text-indigo-300">Class Imbalance Handling (SMOTE)</div>
+            <i class="fa-solid fa-arrow-down text-slate-500"></i>
+            <div class="w-full bg-slate-800 py-3 rounded-lg text-center font-bold border border-slate-600 shadow-lg">Machine Learning Model (Random Forest / XGBoost)</div>
+            <i class="fa-solid fa-arrow-down text-slate-500"></i>
+            <div class="flex w-full justify-between gap-4">
+                <div class="flex-1 bg-green-900/30 py-3 rounded-lg text-center font-bold border border-green-500/30 text-green-400">0 = Genuine</div>
+                <div class="flex-1 bg-red-900/30 py-3 rounded-lg text-center font-bold border border-red-500/30 text-red-400">1 = Fraudulent</div>
+            </div>
+            <i class="fa-solid fa-arrow-down text-slate-500"></i>
+            <div class="w-full bg-slate-800 py-3 rounded-lg text-center font-bold border border-slate-600 shadow-lg text-white">Dashboard Alert Generation</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

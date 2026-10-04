@@ -1,0 +1,111 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="mb-6 flex justify-between items-center">
+    <h1 class="text-2xl font-bold">Transaction Monitoring</h1>
+    <div class="flex space-x-2">
+        <input type="text" placeholder="Search..." class="bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-cyan-500">
+        <select class="bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-cyan-500 text-slate-300">
+            <option>All Status</option>
+            <option>Safe</option>
+            <option>Suspicious</option>
+            <option>Fraud</option>
+        </select>
+    </div>
+</div>
+
+<div class="glass-card rounded-xl overflow-hidden shadow-xl">
+    <table class="w-full text-left text-sm text-slate-300">
+        <thead class="text-xs uppercase bg-slate-800 text-slate-400 border-b border-slate-700">
+            <tr>
+                <th class="px-6 py-4">Transaction ID</th>
+                <th class="px-6 py-4">Date & Time</th>
+                <th class="px-6 py-4">Merchant</th>
+                <th class="px-6 py-4">Category</th>
+                <th class="px-6 py-4">Location</th>
+                <th class="px-6 py-4">Amount</th>
+                <th class="px-6 py-4 text-center">Risk Score</th>
+                <th class="px-6 py-4 text-center">Status</th>
+                <th class="px-6 py-4 text-center">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for t in txns %}
+            <tr class="border-b border-slate-700/50 hover:bg-slate-800/50 transition">
+                <td class="px-6 py-4 font-mono text-xs">{{ t.txn_id }}</td>
+                <td class="px-6 py-4">{{ t.date }}<br><span class="text-xs text-slate-500">{{ t.time }}</span></td>
+                <td class="px-6 py-4 font-medium text-slate-200">{{ t.merchant }}</td>
+                <td class="px-6 py-4 text-slate-400">{{ t.category }}</td>
+                <td class="px-6 py-4">{{ t.location }}</td>
+                <td class="px-6 py-4 font-semibold">₹{{ t.amount }}</td>
+                <td class="px-6 py-4 text-center">
+                    <span class="font-bold {% if t.risk_score > 75 %}text-red-400{% elif t.risk_score > 30 %}text-yellow-400{% else %}text-green-400{% endif %}">
+                        {{ t.risk_score }}%
+                    </span>
+                </td>
+                <td class="px-6 py-4 text-center">
+                    <span class="px-3 py-1 rounded-full text-xs border
+                        {% if t.status == 'Safe' %}bg-green-500/10 text-green-400 border-green-500/20
+                        {% elif t.status == 'Suspicious' %}bg-yellow-500/10 text-yellow-400 border-yellow-500/20
+                        {% else %}bg-red-500/10 text-red-400 border-red-500/20{% endif %}">
+                        {{ t.status }}
+                    </span>
+                </td>
+                <td class="px-6 py-4 text-center">
+                    <button onclick="openModal('{{ t.id }}')" class="text-cyan-400 hover:text-cyan-300 text-xs uppercase tracking-wider bg-slate-800 px-3 py-1 rounded border border-slate-700">Details</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal -->
+<div id="txnModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden z-50 flex items-center justify-center">
+    <div class="glass-card rounded-xl p-8 max-w-lg w-full relative border border-slate-700 shadow-2xl">
+        <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl"><i class="fa-solid fa-xmark"></i></button>
+        <h2 class="text-2xl font-bold mb-6 border-b border-slate-700 pb-4">Transaction Analysis</h2>
+        
+        <div id="modalContent" class="space-y-4 text-sm">
+            <!-- Populated by JS -->
+        </div>
+        
+        <div class="mt-8 flex justify-end space-x-3">
+            <button onclick="closeModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg">Close</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+    function openModal(id) {
+        fetch('/api/transaction/' + id).then(r => r.json()).then(data => {
+            const isFraud = data.prediction === 'FRAUD';
+            const colorClass = isFraud ? 'text-red-400' : 'text-green-400';
+            
+            document.getElementById('modalContent').innerHTML = `
+                <div class="grid grid-cols-2 gap-4">
+                    <div><span class="text-slate-500 text-xs uppercase block">Transaction ID</span><span class="font-mono text-slate-200">${data.txn_id}</span></div>
+                    <div><span class="text-slate-500 text-xs uppercase block">Amount</span><span class="font-bold text-lg text-slate-100">₹${data.amount}</span></div>
+                    
+                    <div><span class="text-slate-500 text-xs uppercase block">Merchant</span><span class="text-slate-200">${data.merchant}</span></div>
+                    <div><span class="text-slate-500 text-xs uppercase block">Category</span><span class="text-slate-200">${data.category}</span></div>
+                    
+                    <div><span class="text-slate-500 text-xs uppercase block">Date & Time</span><span class="text-slate-200">${data.date} ${data.time}</span></div>
+                    <div><span class="text-slate-500 text-xs uppercase block">Location</span><span class="text-slate-200">${data.location}</span></div>
+                </div>
+                
+                <div class="mt-6 p-4 rounded-lg bg-slate-900 border border-slate-700">
+                    <h4 class="text-xs uppercase text-slate-500 mb-2">AI Prediction Result</h4>
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-bold text-xl ${colorClass}">${data.prediction}</span>
+                        <span class="bg-slate-800 px-3 py-1 rounded text-xs">Risk Score: <span class="${colorClass} font-bold">${data.risk_score}%</span></span>
+                    </div>
+                    ${isFraud ? `<div class="text-red-400/80 text-xs mt-2"><i class="fa-solid fa-circle-info mr-1"></i> Detection factors: <br>${data.reason}</div>` : `<div class="text-green-400/80 text-xs mt-2"><i class="fa-solid fa-circle-check mr-1"></i> Fits normal spending pattern</div>`}
+                </div>
+            `;
+            document.getElementById('txnModal').classList.remove('hidden');
+        });
+    }
+    function closeModal() { document.getElementById('txnModal').classList.add('hidden'); }
+</script>
+{% endblock %}

@@ -1,0 +1,111 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="text-center mb-10">
+        <h1 class="text-3xl font-bold mb-2">Card Security</h1>
+        <p class="text-slate-400">Manage your virtual demo card protection settings</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+        <!-- Virtual Card -->
+        <div class="perspective-1000">
+            <div id="demoCard" class="w-full h-56 rounded-2xl p-6 text-white shadow-2xl relative overflow-hidden transition-all duration-500 transform {% if card.status == 'PROTECTED' %}bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700{% else %}bg-gradient-to-br from-red-900 to-red-950 border border-red-500/50{% endif %}">
+                <!-- Card Background Patterns -->
+                <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
+                <div class="absolute -right-16 -top-16 w-48 h-48 bg-white/5 rounded-full blur-2xl"></div>
+                
+                <div class="relative z-10 flex flex-col justify-between h-full">
+                    <div class="flex justify-between items-start">
+                        <i class="fa-brands fa-cc-visa text-4xl opacity-80"></i>
+                        <span id="statusBadge" class="px-3 py-1 text-xs font-bold rounded-full {% if card.status == 'PROTECTED' %}bg-green-500/20 text-green-400 border border-green-500/30{% else %}bg-red-500/20 text-red-400 border border-red-500/50 animate-pulse{% endif %}">
+                            <i class="{% if card.status == 'PROTECTED' %}fa-solid fa-lock{% else %}fa-solid fa-lock-open{% endif %} mr-1"></i>
+                            <span id="statusText">{{ card.status }}</span>
+                        </span>
+                    </div>
+                    
+                    <div>
+                        <div class="text-xs text-slate-400 mb-1">Card Number</div>
+                        <div class="text-2xl font-mono tracking-widest text-slate-200 mb-4">{{ card.card_number_masked }}</div>
+                        <div class="flex justify-between">
+                            <div>
+                                <div class="text-[10px] text-slate-400 uppercase">Card Holder</div>
+                                <div class="font-medium tracking-wide uppercase">{{ name }}</div>
+                            </div>
+                            <div>
+                                <div class="text-[10px] text-slate-400 uppercase">Expires</div>
+                                <div class="font-medium">{{ card.expiry }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-8 flex gap-4">
+                <button id="freezeBtn" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition flex items-center justify-center {% if card.status == 'CARD FROZEN' %}hidden{% endif %}">
+                    <i class="fa-solid fa-snowflake mr-2"></i> Freeze Demo Card
+                </button>
+                <button id="unfreezeBtn" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition flex items-center justify-center {% if card.status == 'PROTECTED' %}hidden{% endif %}">
+                    <i class="fa-solid fa-unlock-keyhole mr-2"></i> Unfreeze Card
+                </button>
+            </div>
+        </div>
+
+        <!-- Security Indicators -->
+        <div class="glass-card rounded-2xl p-6">
+            <h3 class="text-xl font-bold mb-6 border-b border-slate-700 pb-4">Security Features</h3>
+            
+            <ul class="space-y-4">
+                <li class="flex items-start">
+                    <div class="mt-1 w-6 text-green-400"><i class="fa-solid fa-circle-check"></i></div>
+                    <div>
+                        <div class="font-semibold text-slate-200">Transaction monitoring</div>
+                        <div class="text-xs text-slate-400">24/7 scanning of all outgoing transactions</div>
+                    </div>
+                </li>
+                <li class="flex items-start">
+                    <div class="mt-1 w-6 text-green-400"><i class="fa-solid fa-circle-check"></i></div>
+                    <div>
+                        <div class="font-semibold text-slate-200">Fraud detection enabled</div>
+                        <div class="text-xs text-slate-400">Active machine learning pipeline running</div>
+                    </div>
+                </li>
+                <li class="flex items-start">
+                    <div class="mt-1 w-6 text-green-400"><i class="fa-solid fa-circle-check"></i></div>
+                    <div>
+                        <div class="font-semibold text-slate-200">Suspicious activity alerts</div>
+                        <div class="text-xs text-slate-400">Instant dashboard and system notifications</div>
+                    </div>
+                </li>
+                <li class="flex items-start">
+                    <div class="mt-1 w-6 text-green-400"><i class="fa-solid fa-circle-check"></i></div>
+                    <div>
+                        <div class="font-semibold text-slate-200">AI risk analysis</div>
+                        <div class="text-xs text-slate-400">Random Forest based anomaly detection</div>
+                    </div>
+                </li>
+                <li class="flex items-start">
+                    <div class="mt-1 w-6 text-green-400"><i class="fa-solid fa-circle-check"></i></div>
+                    <div>
+                        <div class="font-semibold text-slate-200">Secure session</div>
+                        <div class="text-xs text-slate-400">End-to-end encrypted demo environment</div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+    document.getElementById('freezeBtn').addEventListener('click', () => {
+        fetch('/api/card/freeze', { method: 'POST' }).then(r => r.json()).then(data => {
+            if(data.status === 'success') location.reload();
+        });
+    });
+    document.getElementById('unfreezeBtn').addEventListener('click', () => {
+        fetch('/api/card/unfreeze', { method: 'POST' }).then(r => r.json()).then(data => {
+            if(data.status === 'success') location.reload();
+        });
+    });
+</script>
+{% endblock %}

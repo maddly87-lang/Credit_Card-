@@ -1,0 +1,142 @@
+{% extends 'layout.html' %}
+{% block content %}
+<!-- Alerts -->
+<div class="bg-red-900/40 border border-red-500/50 rounded-xl p-4 flex items-center justify-between mb-8 shadow-lg shadow-red-900/20">
+    <div class="flex items-center">
+        <div class="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center mr-4">
+            <i class="fa-solid fa-triangle-exclamation text-red-500 text-xl animate-pulse"></i>
+        </div>
+        <div>
+            <h3 class="text-red-400 font-bold">HIGH RISK TRANSACTION DETECTED</h3>
+            <p class="text-slate-300 text-sm">₹28,900 at Unknown Merchant (Mumbai). Risk Score: 87%</p>
+        </div>
+    </div>
+    <div class="flex space-x-3">
+        <button class="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-lg text-sm transition">Mark as Safe</button>
+        <button class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm shadow-lg shadow-red-900/50 transition">Block Demo Transaction</button>
+    </div>
+</div>
+
+<!-- Stats -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="glass-card rounded-xl p-6 relative overflow-hidden group">
+        <div class="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+        <p class="text-slate-400 text-sm mb-1">Total Transactions</p>
+        <h3 class="text-3xl font-bold text-white">{{ stats.total_txns }}</h3>
+        <p class="text-xs text-slate-500 mt-2">Last updated: Today</p>
+        <i class="fa-solid fa-right-left absolute bottom-6 right-6 text-slate-700 text-3xl group-hover:text-blue-500/30 transition"></i>
+    </div>
+    <div class="glass-card rounded-xl p-6 relative overflow-hidden group">
+        <div class="absolute top-0 right-0 w-24 h-24 bg-cyan-500/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+        <p class="text-slate-400 text-sm mb-1">Total Spending</p>
+        <h3 class="text-3xl font-bold text-white">₹{{ stats.total_spending }}</h3>
+        <p class="text-xs text-slate-500 mt-2">Last updated: Today</p>
+        <i class="fa-solid fa-indian-rupee-sign absolute bottom-6 right-6 text-slate-700 text-3xl group-hover:text-cyan-500/30 transition"></i>
+    </div>
+    <div class="glass-card rounded-xl p-6 relative overflow-hidden group border-red-900/30">
+        <div class="absolute top-0 right-0 w-24 h-24 bg-red-500/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+        <p class="text-slate-400 text-sm mb-1">Fraud Transactions</p>
+        <h3 class="text-3xl font-bold text-red-400">{{ stats.fraud_txns }}</h3>
+        <p class="text-xs text-slate-500 mt-2">Last updated: Today</p>
+        <i class="fa-solid fa-user-secret absolute bottom-6 right-6 text-slate-700 text-3xl group-hover:text-red-500/30 transition"></i>
+    </div>
+    <div class="glass-card rounded-xl p-6 relative overflow-hidden group border-green-900/30">
+        <div class="absolute top-0 right-0 w-24 h-24 bg-green-500/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+        <p class="text-slate-400 text-sm mb-1">Fraud Detection Rate</p>
+        <h3 class="text-3xl font-bold text-green-400">{{ stats.detection_rate }}%</h3>
+        <p class="text-xs text-slate-500 mt-2">AI Model Accuracy</p>
+        <i class="fa-solid fa-bullseye absolute bottom-6 right-6 text-slate-700 text-3xl group-hover:text-green-500/30 transition"></i>
+    </div>
+</div>
+
+<!-- Main Content Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Transactions Table -->
+    <div class="lg:col-span-2 glass-card rounded-xl p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-bold">Recent Transactions</h3>
+            <a href="{{ url_for('transactions') }}" class="text-cyan-400 text-sm hover:underline">View All</a>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm text-slate-300">
+                <thead class="text-xs uppercase bg-slate-800/50 text-slate-400 border-b border-slate-700">
+                    <tr>
+                        <th class="px-4 py-3">ID & Date</th>
+                        <th class="px-4 py-3">Merchant</th>
+                        <th class="px-4 py-3">Amount</th>
+                        <th class="px-4 py-3 text-center">Risk Score</th>
+                        <th class="px-4 py-3 text-center">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in recent_txns %}
+                    <tr class="border-b border-slate-700/50 hover:bg-slate-800/30 transition">
+                        <td class="px-4 py-3">
+                            <div class="font-medium text-white">{{ t.txn_id }}</div>
+                            <div class="text-xs text-slate-500">{{ t.date }} {{ t.time }}</div>
+                        </td>
+                        <td class="px-4 py-3">
+                            <div>{{ t.merchant }}</div>
+                            <div class="text-xs text-slate-500">{{ t.location }}</div>
+                        </td>
+                        <td class="px-4 py-3 font-semibold">₹{{ t.amount }}</td>
+                        <td class="px-4 py-3 text-center">
+                            <span class="px-2 py-1 rounded text-xs
+                                {% if t.risk_score > 75 %}bg-red-500/20 text-red-400
+                                {% elif t.risk_score > 30 %}bg-yellow-500/20 text-yellow-400
+                                {% else %}bg-green-500/20 text-green-400{% endif %}">
+                                {{ t.risk_score }}%
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                            {% if t.status == 'Safe' %}
+                                <span class="text-green-400"><i class="fa-solid fa-check-circle mr-1"></i>Safe</span>
+                            {% elif t.status == 'Suspicious' %}
+                                <span class="text-yellow-400"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Suspicious</span>
+                            {% else %}
+                                <span class="text-red-400"><i class="fa-solid fa-circle-xmark mr-1"></i>Fraud</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Quick Quick Chart -->
+    <div class="glass-card rounded-xl p-6 flex flex-col">
+        <h3 class="text-xl font-bold mb-4">Daily Spending</h3>
+        <div class="flex-1 min-h-[250px] flex items-center justify-center relative">
+            <canvas id="miniChart"></canvas>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+    const ctx = document.getElementById('miniChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            datasets: [{
+                label: 'Spending (₹)',
+                data: [1200, 1900, 850, 4500, 2000, 28900, 1500],
+                borderColor: '#38bdf8',
+                backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8' } },
+                x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+            }
+        }
+    });
+</script>
+{% endblock %}
